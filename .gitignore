@@ -1,0 +1,4 @@
+*.pyc
+.data
+/home/tagore/repos/CNN-CIFAR10/data/
+data/cifar-10-python.tar.gz
