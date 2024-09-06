@@ -1,4 +1,76 @@
-*.pyc
-.data
-/home/tagore/repos/CNN-CIFAR10/data/
-data/cifar-10-python.tar.gz
+/home/tagore/repos/CNN-CIFAR10/data/cifar-10-batches-py
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Data files
+data/
+*.csv
+*.tsv
+*.xlsx
+*.json
+*.h5
+*.npy
+*.npz
+
+# Model files and checkpoints
+*.h5
+*.ckpt
+*.pth
+*.pt
+
+# Logs
+*.log
+logs/
+*.out
+
+# Environment and package files
+*.env
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+*.egg
+.DS_Store
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Visual Studio Code settings
+.vscode/
+
+# PyTorch and TorchServe files
+*.pt
+*.pkl
+*.onnx
+
+# Ignore specific scripts or temp files
+test.ipynb
+*.bak
+*.tmp
+*.swp
+
+# Ignore any large binary files
+*.tar.gz
+*.zip
+
+# Ignore any MacOS specific files
+._*
+Thumbs.db
+
+# Ignore config files with secrets
+config.py
+
+# Ignore cache and build directories
+__pycache__/
+build/
+dist/
+*.spec
+
+# TensorBoard log files
+runs/
+
+# Ignore virtual environment
+env/
