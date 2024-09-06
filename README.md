@@ -1,6 +1,7 @@
-# CNN-CIFAR10
+# One for All For CIFAR10
 
-## File Structure
+## Directory Structure
+```
 CNN-CIFAR10/
 │
 ├── data/
@@ -11,7 +12,7 @@ CNN-CIFAR10/
 ├── models/
 │   ├── __init__.py            # Initialize the models module
 │   ├── base_model.py          # BaseModel class (already implemented)
-│   ├── custom_cnn.py          # Custom CNN model (already implemented)
+│   ├── custom_cnn.py          # Custom CNN model (already implemented, this is a small model that can be trained on local machine to verify funcitonalites)
 │   ├── resnet.py              # Implementation of ResNet architectures (ResNet18, ResNet34, etc.)
 │   ├── mobinet.py             # Implementation of MobileNet architecture
 │   └── layers.py              # Custom layers or building blocks used in ResNet and MobileNet (e.g., residual blocks, depthwise separable convs)
@@ -28,5 +29,6 @@ CNN-CIFAR10/
 ├── README.md                  # Documentation for setting up and using the project
 ├── test.ipynb                 # Jupyter notebook for testing models, visualizing results, etc.
 └── .gitignore                 # Specify which files and directories to ignore in version control
+```
 
 
