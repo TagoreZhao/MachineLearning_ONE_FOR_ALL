@@ -13,49 +13,28 @@ class CustomCNN(BaseModel):
     def __init__(self):
         super(CustomCNN, self).__init__()
 
-        # Block 1
-        self.conv1 = nn.Conv2d(in_channels=INPUT_CHANNELS, out_channels=CONV1_OUT_CHANNELS, kernel_size=KERNEL_SIZE, stride=STRIDE, padding=PADDING)
-        self.bn1 = nn.BatchNorm2d(CONV1_OUT_CHANNELS)
-        self.conv2 = nn.Conv2d(in_channels=CONV1_OUT_CHANNELS, out_channels=CONV2_OUT_CHANNELS, kernel_size=KERNEL_SIZE, stride=STRIDE, padding=PADDING)
-        self.bn2 = nn.BatchNorm2d(CONV2_OUT_CHANNELS)
-        self.pool1 = nn.MaxPool2d(kernel_size=POOL_KERNEL_SIZE, stride=POOL_STRIDE)  # Output: [batch_size, 64, 16, 16]
-        self.conv3 = nn.Conv2d(in_channels=CONV2_OUT_CHANNELS, out_channels=CONV3_OUT_CHANNELS, kernel_size=KERNEL_SIZE, stride=STRIDE, padding=PADDING)
-        self.dropout1 = nn.Dropout(DROPOUT_RATE_1)
+        # A very small model with only one convolutional block and one fully connected layer
+        self.conv1 = nn.Conv2d(in_channels=INPUT_CHANNELS, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(16)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)  # Reduces the spatial size by half
 
-        # Block 2
-        self.conv4 = nn.Conv2d(in_channels=CONV3_OUT_CHANNELS, out_channels=CONV4_OUT_CHANNELS, kernel_size=KERNEL_SIZE, stride=STRIDE, padding=PADDING)
-        self.bn3 = nn.BatchNorm2d(CONV4_OUT_CHANNELS)
-        self.conv5 = nn.Conv2d(in_channels=CONV4_OUT_CHANNELS, out_channels=CONV5_OUT_CHANNELS, kernel_size=KERNEL_SIZE, stride=STRIDE, padding=PADDING)
-        self.bn4 = nn.BatchNorm2d(CONV5_OUT_CHANNELS)
-        self.pool2 = nn.MaxPool2d(kernel_size=POOL_KERNEL_SIZE, stride=POOL_STRIDE)  # Output: [batch_size, 256, 8, 8]
-        self.conv6 = nn.Conv2d(in_channels=CONV5_OUT_CHANNELS, out_channels=CONV6_OUT_CHANNELS, kernel_size=KERNEL_SIZE, stride=STRIDE, padding=PADDING)
-        self.dropout2 = nn.Dropout(DROPOUT_RATE_2)
+        # A simple fully connected layer that connects to the number of classes
+        self.fc1 = nn.Linear(16 * 16 * 16, NUM_CLASSES)  # Assuming CIFAR-10, image size is 32x32
 
-        # Fully Connected Layers
-        self.fc1 = nn.Linear(CONV6_OUT_CHANNELS * 8 * 8, FC1_OUTPUT)
-        self.dropout3 = nn.Dropout(DROPOUT_RATE_3)
-        self.fc2 = nn.Linear(FC1_OUTPUT, NUM_CLASSES)  # 10 classes for CIFAR-10
+        # Tracking attributes inherited from BaseModel
+        self.train_loss_history = []
+        self.val_loss_history = []
+        self.train_accuracy_history = []
+        self.val_accuracy_history = []
 
     def forward(self, x):
-        # Block 1
+        # Apply first convolution, batch norm, ReLU activation, and pooling
         x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = self.pool1(x)
-        x = F.relu(self.conv3(x))
-        x = self.dropout1(x)
+        x = self.pool(x)  # Output size: [batch_size, 16, 16, 16]
 
-        # Block 2
-        x = F.relu(self.bn3(self.conv4(x)))
-        x = F.relu(self.bn4(self.conv5(x)))
-        x = self.pool2(x)
-        x = F.relu(self.conv6(x))
-        x = self.dropout2(x)
+        # Flatten the tensor for the fully connected layer
+        x = x.view(x.size(0), -1)
 
-        # Flatten for fully connected layers
-        x = x.view(x.size(0), -1)  # Flatten the tensor
-
-        # Fully Connected Layers
-        x = F.relu(self.fc1(x))
-        x = self.dropout3(x)
-        x = self.fc2(x)
+        # Fully connected layer
+        x = self.fc1(x)
         return x
