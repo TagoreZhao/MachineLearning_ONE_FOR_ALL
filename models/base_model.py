@@ -42,3 +42,4 @@ class BaseModel(nn.Module):
             'train_accuracy': self.train_accuracy_per_iteration,
             'val_accuracy': self.val_accuracy_per_iteration
         }
+
