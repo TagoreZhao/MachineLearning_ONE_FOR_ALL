@@ -1,7 +1,7 @@
 # utils/training.py
 import torch
 
-def train_model(model, train_loader, val_loader, criterion, optimizer, device, num_epochs=1, save_path='mini_cnn_model.pth'):
+def train_model(model, train_loader, val_loader, criterion, optimizer, device, num_epochs=1, scheduler=None, save_path='model.pth'):
     """
     Train and validate the model.
 
@@ -13,6 +13,7 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, device, n
         optimizer: Optimizer for training.
         device: Device to use ('cuda' or 'cpu').
         num_epochs: Number of epochs to train the model.
+        scheduler: Learning rate scheduler, if any.
         save_path: File path to save the trained model.
 
     Returns:
@@ -91,6 +92,10 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, device, n
             val_loss=epoch_val_loss, 
             val_accuracy=epoch_val_accuracy
         )
+
+        # Step the scheduler based on validation loss if a scheduler is provided
+        if scheduler is not None:
+            scheduler.step(epoch_val_loss)
 
         # Print results for each epoch
         print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_accuracy:.4f}, "
