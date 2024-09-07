@@ -48,7 +48,6 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
     Returns:
         None
     """
-    model.to(device)
     target_accuracy = 0.90  # Set target accuracy to 90%
     achieved_accuracy = 0.0
     epochs = initial_epochs
