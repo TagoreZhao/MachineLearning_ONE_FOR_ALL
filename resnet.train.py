@@ -6,7 +6,7 @@ from models.resnet import resnet34, resnet50  # Import your ResNet models
 from utils.training import train_model  # Import the training function
 from utils.dataset import get_CIFAR_10  # Function to load CIFAR-10 data
 from utils.visualization import plot_metrics  # Import the plot_metrics function
-from utils.evaluation import evaluate_model  # Assume you have an evaluation function
+from utils.evaluation import evaluate_model  # Import your evaluate_model function
 from torch.cuda.amp import GradScaler, autocast  # For mixed precision training
 
 # Set device to GPU if available, otherwise use CPU
@@ -14,9 +14,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
 # Load CIFAR-10 dataset with data augmentation suitable for ResNet
-train_loader, val_loader = get_CIFAR_10(batch_size=64, num_workers=5, agumentation='resnet')
+train_loader, val_loader = get_CIFAR_10(batch_size=256, num_workers=8, agumentation='resnet')
 
-# Initialize ResNet-34 model (or ResNet-50)
+# Initialize ResNet-34 model (or switch to ResNet-50)
 model = resnet34(num_classes=10).to(device)  # Change to resnet50() if you want to train ResNet-50
 
 # Define loss function and optimizer
@@ -29,7 +29,7 @@ scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)  # Red
 # Use mixed precision training to reduce memory usage
 scaler = GradScaler()
 
-# Define evaluation function (assuming evaluate_model is implemented in evaluation.py)
+# Define a function that trains and evaluates, and continues training until >90% accuracy is achieved
 def evaluate_and_continue_training(model, train_loader, val_loader, criterion, optimizer, device, initial_epochs=200, scheduler=None, save_path='resnet_model.pth'):
     """
     Train the model and evaluate validation accuracy, continue training until >90% accuracy is achieved.
@@ -104,7 +104,8 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
         print(f"Model saved to {save_path}.")
         
         # Evaluate model on the validation set
-        achieved_accuracy = evaluate_model(model, val_loader, device)
+        eval_results = evaluate_model(model, val_loader, criterion, device)
+        achieved_accuracy = eval_results['accuracy']
         print(f"Validation Accuracy: {achieved_accuracy * 100:.2f}%")
 
         # Check if target accuracy is reached, else continue training with more epochs
@@ -118,4 +119,3 @@ evaluate_and_continue_training(model, train_loader, val_loader, criterion, optim
 # Retrieve and save the training metrics plot
 metrics = model.get_metrics_per_iteration()
 plot_metrics(metrics, save_path='training_metrics.png')
-
