@@ -181,4 +181,229 @@ class ResNetBottleneckBlock(nn.Module):
 
         return out
 
+class BinaryConv2d(nn.Conv2d):
+    """
+    Binary Convolution Layer that uses binarized weights and activations.
+    
+    This class overrides the standard convolution operation by binarizing 
+    the weights and inputs during the forward pass using the sign method. 
+    This approach reduces computational complexity and memory usage.
+    """
+    def forward(self, input):
+        binarized_weights = self.weight.sign()  # Binarize weights to -1 and +1
+        input = input.sign()  # Binarize input
+        return F.conv2d(input, binarized_weights, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
+class PreBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(PreBlock, self).__init__()
+        self.binary_conv1 = BinaryConv2d(in_channels, out_channels, kernel_size=1, bias=False)
+        self.prelu1 = nn.PReLU(num_parameters=out_channels)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+
+        self.binary_depthwise = BinaryConv2d(out_channels, out_channels, kernel_size=3, stride=stride, padding=1, groups=out_channels, bias=False)
+        self.prelu2 = nn.PReLU(num_parameters=out_channels)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+
+        self.binary_conv3 = BinaryConv2d(out_channels, out_channels, kernel_size=1, bias=False)
+        self.prelu3 = nn.PReLU(num_parameters=out_channels)
+        self.bn3 = nn.BatchNorm2d(out_channels)
+
+        # Adjust channels if needed for skip connections
+        self.adjust_channels = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False) if in_channels != out_channels or stride != 1 else nn.Identity()
+
+    def forward(self, x):
+        # Initial Binary Activation -> 1x1 Conv -> PReLU -> BatchNorm
+        residual = self.adjust_channels(x)  # Adjust residual size
+        x = x.sign()
+        out = self.binary_conv1(x)
+        out = self.prelu1(out)
+        out = self.bn1(out)
+
+        # Nested Depthwise 3x3 Conv block
+        out = out.sign()
+        out = self.binary_depthwise(out)
+        out = self.prelu2(out)
+        out = self.bn2(out)
+
+        # Nested 1x1 Conv block
+        out = out.sign()
+        out = self.binary_conv3(out)
+        out = self.prelu3(out)
+        out = self.bn3(out)
+
+        # Add skip connection
+        out += residual
+        return out
+
+class MidBlock(nn.Module):
+    """
+    MidBlock - Enhances intermediate feature representations with nested binary operations.
+
+    The block structure is:
+    Input -> (Bin Activate -> Bin Depthwise 3x3 Conv -> PReLU -> BatchNorm) 
+    -> Bin Activate -> Bin 1x1 Conv -> PReLU -> BatchNorm 
+    -> (Bin Activate -> Bin 1x1 Conv -> PReLU -> BatchNorm) -> Output.
+    
+    Skip connections are included within the nested sequences to preserve information flow.
+
+    Args:
+        in_channels (int): Number of input channels (M).
+        out_channels (int): Number of output channels (N).
+        stride (int, optional): Stride of the convolution. Default is 1.
+    """
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(MidBlock, self).__init__()
+        
+        # First 3x3 Depthwise Convolution, keeping channels M -> M
+        self.binary_depthwise = BinaryConv2d(in_channels, in_channels, kernel_size=3, stride=stride, padding=1, groups=in_channels, bias=False)
+        self.prelu1 = nn.PReLU(num_parameters=in_channels)
+        self.bn1 = nn.BatchNorm2d(in_channels)
+
+        # Transition from M channels to N channels using 1x1 Convolution
+        self.binary_conv1 = BinaryConv2d(in_channels, out_channels, kernel_size=1, bias=False)
+        self.prelu2 = nn.PReLU(num_parameters=out_channels)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+
+        # Second 1x1 Convolution with N -> N transition
+        self.binary_conv2 = BinaryConv2d(out_channels, out_channels, kernel_size=1, bias=False)
+        self.prelu3 = nn.PReLU(num_parameters=out_channels)
+        self.bn3 = nn.BatchNorm2d(out_channels)
+
+        # Adjust channels for skip connections if the input and output channels differ
+        self.adjust_channels = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False) if in_channels != out_channels or stride != 1 else nn.Identity()
+
+    def forward(self, x):
+        # First step: (DxDxM) -> (DxDxM) with depthwise convolution
+        residual1 = x  # Adjust residual if needed
+        out = x.sign()
+        out = self.binary_depthwise(out)
+        out = self.prelu1(out)
+        out = self.bn1(out)
+
+        # Add the first skip connection
+        out += residual1
+
+        # Second step: (DxDxM) -> (DxDxN) using the first 1x1 convolution
+        out = out.sign()
+        out = self.binary_conv1(out)
+        out = self.prelu2(out)
+        out = self.bn2(out)
+
+        # Third step: (DxDxN) -> (DxDxN) using the second 1x1 convolution with skip connection
+        residual2 = out  # Keep the residual for skip connection
+        out = out.sign()
+        out = self.binary_conv2(out)
+        out = self.prelu3(out)
+        out = self.bn3(out)
+
+        # Add the second skip connection
+        out += residual2
+        return out
+
+
+class PostBlock(nn.Module):
+    """
+    PostBlock - Finalizes feature processing with binary operations and skip connections.
+
+    This block structure includes multiple nested binary convolutions with skip connections
+    to enhance the network's depth and performance.
+
+    Args:
+        in_channels (int): Number of input channels (M).
+        out_channels (int): Number of output channels (N).
+        stride (int, optional): Stride of the convolution. Default is 1.
+    """
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(PostBlock, self).__init__()
+
+        # First Depthwise Convolution, keeping channels M -> M
+        self.binary_depthwise = BinaryConv2d(in_channels, in_channels, kernel_size=3, stride=stride, padding=1, groups=in_channels, bias=False)
+        self.prelu1 = nn.PReLU(num_parameters=in_channels)
+        self.bn1 = nn.BatchNorm2d(in_channels)
+
+        # Second Convolution, keeping channels M -> M
+        self.binary_conv1 = BinaryConv2d(in_channels, in_channels, kernel_size=1, bias=False)
+        self.prelu2 = nn.PReLU(num_parameters=in_channels)
+        self.bn2 = nn.BatchNorm2d(in_channels)
+
+        # Third Convolution, keeping channels M -> M
+        self.binary_conv2 = BinaryConv2d(in_channels, in_channels, kernel_size=1, bias=False)
+        self.prelu3 = nn.PReLU(num_parameters=in_channels)
+        self.bn3 = nn.BatchNorm2d(in_channels)
+
+        # Final Convolution, changing channels M -> N
+        self.binary_conv3 = BinaryConv2d(in_channels, out_channels, kernel_size=1, bias=False)
+        self.prelu4 = nn.PReLU(num_parameters=out_channels)
+        self.bn4 = nn.BatchNorm2d(out_channels)
+
+        # Adjust channels if needed for skip connections
+        self.adjust_channels = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, bias=False) if in_channels != out_channels else nn.Identity()
+
+    def forward(self, x):
+        # First sequence with skip connection: (DxDxM) -> (DxDxM)
+        residual1 = x  # Keep the residual for skip connection
+        out = x.sign()
+        out = self.binary_depthwise(out)
+        out = self.prelu1(out)
+        out = self.bn1(out)
+
+        out += residual1  # Add first skip connection
+
+        # Second sequence with skip connection: (DxDxM) -> (DxDxM)
+        residual2 = out  # Keep the residual for skip connection
+        out = out.sign()
+        out = self.binary_conv1(out)
+        out = self.prelu2(out)
+        out = self.bn2(out)
+
+        out += residual2  # Add second skip connection
+
+        # Third sequence without skip connection: (DxDxM) -> (DxDxM)
+        out = out.sign()
+        out = self.binary_conv2(out)
+        out = self.prelu3(out)
+        out = self.bn3(out)
+
+        # Final sequence, changing channels: (DxDxM) -> (DxDxN)
+        out = out.sign()
+        out = self.binary_conv3(out)
+        out = self.prelu4(out)
+        out = self.bn4(out)
+
+        return out
+
+
+class StandardDWBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(StandardDWBlock, self).__init__()
+        self.binary_depthwise = BinaryConv2d(in_channels, in_channels, kernel_size=3, stride=stride, padding=1, groups=in_channels, bias=False)
+        self.prelu1 = nn.PReLU(num_parameters=in_channels)
+        self.bn1 = nn.BatchNorm2d(in_channels)
+
+        self.binary_pointwise = BinaryConv2d(in_channels, out_channels, kernel_size=1, bias=False)
+        self.prelu2 = nn.PReLU(num_parameters=out_channels)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+
+        # Adjust channels if needed for skip connections
+        self.adjust_channels = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False) if in_channels != out_channels or stride != 1 else nn.Identity()
+
+    def forward(self, x):
+        # Adjust channels for residual connection
+        residual = self.adjust_channels(x)
+
+        # Binary Activation -> Depthwise Convolution -> PReLU -> BatchNorm
+        x = x.sign()
+        x = self.binary_depthwise(x)
+        x = self.prelu1(x)
+        x = self.bn1(x)
+
+        # Binary Activation -> Pointwise Convolution -> PReLU -> BatchNorm
+        x = x.sign()
+        x = self.binary_pointwise(x)
+        x = self.prelu2(x)
+        x = self.bn2(x)
+
+        # Add skip connection
+        x += residual
+        return x

@@ -60,12 +60,16 @@ class ResNet(BaseModel):
                 nn.BatchNorm2d(out_channels * block.expansion),
             )
 
-        layers = []
-        layers.append(block(self.in_channels, out_channels, stride, shortcut_type=shortcut_type))
+        layers = [
+            block(
+                self.in_channels, out_channels, stride, shortcut_type=shortcut_type
+            )
+        ]
         self.in_channels = out_channels * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.in_channels, out_channels, shortcut_type=shortcut_type))
-
+        layers.extend(
+            block(self.in_channels, out_channels, shortcut_type=shortcut_type)
+            for _ in range(1, blocks)
+        )
         return nn.Sequential(*layers)
 
     def forward(self, x):
