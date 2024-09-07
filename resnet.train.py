@@ -99,6 +99,10 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
             
             print(f"Epoch {epoch+1}/{epochs} - Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_accuracy:.4f}")
         
+        # Retrieve and save the training metrics plot
+        metrics = model.get_metrics_per_iteration()
+        plot_metrics(metrics, save_path='training_metrics.png')
+
         # Save the model
         torch.save(model.state_dict(), save_path)
         print(f"Model saved to {save_path}.")
@@ -115,7 +119,3 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
 
 # Train ResNet-34 (or ResNet-50) and continue until >90% accuracy
 evaluate_and_continue_training(model, train_loader, val_loader, criterion, optimizer, device, initial_epochs=200, scheduler=scheduler, save_path='resnet_model.pth')
-
-# Retrieve and save the training metrics plot
-metrics = model.get_metrics_per_iteration()
-plot_metrics(metrics, save_path='training_metrics.png')
