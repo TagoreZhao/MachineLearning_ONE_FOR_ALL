@@ -20,16 +20,16 @@ class BaseModel(nn.Module):
         Can accept None for unused metrics.
         """
         if train_loss is not None:
-            print(f"Tracking training loss: {train_loss}")
+            # print(f"Tracking training loss: {train_loss}")
             self.train_loss_per_iteration.append(train_loss)
         if val_loss is not None:
-            print(f"Tracking validation loss: {val_loss}")
+            # print(f"Tracking validation loss: {val_loss}")
             self.val_loss_per_iteration.append(val_loss)
         if train_accuracy is not None:
-            print(f"Tracking training accuracy: {train_accuracy}")
+            # print(f"Tracking training accuracy: {train_accuracy}")
             self.train_accuracy_per_iteration.append(train_accuracy)
         if val_accuracy is not None:
-            print(f"Tracking validation accuracy: {val_accuracy}")
+            # print(f"Tracking validation accuracy: {val_accuracy}")
             self.val_accuracy_per_iteration.append(val_accuracy)
 
     def get_metrics_per_iteration(self):
