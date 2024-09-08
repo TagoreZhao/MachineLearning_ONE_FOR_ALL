@@ -150,12 +150,13 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
     achieved_accuracy = 0.0
     best_val_accuracy = 0.0  # Track the best validation accuracy
     epochs = initial_epochs
+    total_epochs = 0  # Initialize total epochs counter
     
     # Use mixed precision training to reduce memory usage
     scaler = GradScaler()
     
     while achieved_accuracy < target_accuracy:
-        print(f"Starting training for {epochs} epochs.")
+        print(f"Starting training for the next {epochs} epochs.")
         
         for epoch in range(epochs):
             epoch_train_loss = 0.0
@@ -203,7 +204,10 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
             if scheduler is not None:
                 scheduler.step()
             
-            print(f"Epoch {epoch+1}/{epochs} - Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_accuracy:.4f}")
+            print(f"Epoch {total_epochs + epoch + 1} - Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_accuracy:.4f}")
+        
+        # Update the total epochs count
+        total_epochs += epochs
         
         # Retrieve and save the training metrics plot
         metrics = model.get_metrics_per_iteration()
@@ -218,9 +222,11 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
         if achieved_accuracy > best_val_accuracy:
             best_val_accuracy = achieved_accuracy
             # Save the model checkpoint
-            save_checkpoint(model, optimizer, epoch, best_val_accuracy, save_path)
+            save_checkpoint(model, optimizer, total_epochs, best_val_accuracy, save_path)
         
         # Check if target accuracy is reached, else continue training with more epochs
         if achieved_accuracy < target_accuracy:
             print("Target accuracy not reached, increasing epochs and continuing training.")
             epochs += 50  # Increment epochs by 50 if target not reached
+        else:
+            print(f"Target accuracy reached after {total_epochs} total epochs!")
