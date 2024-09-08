@@ -42,7 +42,7 @@ def resnet_augmentations():
     return T.Compose([
         T.RandomCrop(32, padding=4),                # Randomly crop the image with padding of 4 pixels
         T.RandomHorizontalFlip(),                   # Randomly flip the image horizontally
-        T.RandomRotation(degree = 15),
+        T.RandomRotation(degrees = 15),
         T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.05),  # Mild color jitter
         T.autoaugment.TrivialAugmentWide(),
         T.ToTensor(),
