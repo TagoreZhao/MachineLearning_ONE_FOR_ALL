@@ -36,7 +36,7 @@ evaluate_and_continue_training(
     criterion, 
     optimizer, 
     device, 
-    initial_epochs=20, 
+    initial_epochs=1, 
     scheduler=scheduler, 
     save_path='resnet_model.pth'
 )
