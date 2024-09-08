@@ -12,7 +12,7 @@ CNN-CIFAR10/
 │   ├── base_model.py          # BaseModel class (already implemented)
 │   ├── custom_cnn.py          # Custom CNN model (already implemented, this is a small model that can be used to test)
 │   ├── resnet.py              # Implementation of ResNet architectures (ResNet18, ResNet34, etc.)
-│   ├── mobinet.py             # Implementation of MobileNet architecture
+│   ├── mobinet.py             # Implementation of Mobile Binary Net architecture
 │   └── layers.py              # Custom layers or building blocks used in ResNet and MobileNet (e.g., residual blocks, depthwise separable convs)
 │
 ├── utils/
