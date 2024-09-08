@@ -1,6 +1,8 @@
 # utils/evaluation.py
 import torch
 import torch.nn as nn
+from torch.utils.data import Subset
+import random
 
 def evaluate_model(model, data_loader, criterion, device):
     """
@@ -52,3 +54,26 @@ def evaluate_model(model, data_loader, criterion, device):
         'loss': avg_loss,
         'accuracy': accuracy
     }
+
+# Function to create a subset of the validation set
+def get_val_subset(val_loader, subset_size=1000):
+    """
+    Get a subset of the validation data for faster evaluation.
+
+    Args:
+        val_loader: Original validation DataLoader.
+        subset_size: Number of samples in the subset.
+
+    Returns:
+        Subset DataLoader.
+    """
+    val_dataset = val_loader.dataset
+    subset_indices = random.sample(range(len(val_dataset)), min(subset_size, len(val_dataset)))
+    val_subset = Subset(val_dataset, subset_indices)
+    return torch.utils.data.DataLoader(
+        val_subset,
+        batch_size=val_loader.batch_size,
+        shuffle=False,
+        num_workers=val_loader.num_workers,
+    )
+

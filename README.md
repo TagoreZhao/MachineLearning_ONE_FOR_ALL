@@ -28,6 +28,7 @@ CNN-CIFAR10/
 ├── requirements.txt           # List of required Python packages (e.g., PyTorch, torchvision)
 ├── README.md                  # Documentation for setting up and using the project
 ├── test.ipynb                 # Jupyter notebook for testing models, visualizing results, etc.
+├── resnet.train.py            # script to train resnet to 90% accuracy
 └── .gitignore                 # Specify which files and directories to ignore in version control
 ```
 
