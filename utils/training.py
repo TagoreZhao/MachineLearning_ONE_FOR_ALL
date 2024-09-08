@@ -75,7 +75,59 @@ def train_model(model, train_loader, criterion, optimizer, device, num_epochs=1,
     print(f"Model saved to {save_path}.")
 
 # Define a function that trains and evaluates, and continues training until >90% accuracy is achieved
-def evaluate_and_continue_training(model, train_loader, val_loader, criterion, optimizer, device, initial_epochs=200, scheduler=None, save_path='resnet_model.pth'):
+def save_checkpoint(model, optimizer, epoch, val_accuracy, filepath):
+    """
+    Saves a checkpoint of the model with its current state.
+
+    Parameters:
+    - model: The model to save.
+    - optimizer: The optimizer used during training.
+    - epoch: The current epoch number.
+    - val_accuracy: The validation accuracy of the model.
+    - filepath: The path to save the checkpoint.
+    """
+    checkpoint = {
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'val_accuracy': val_accuracy
+    }
+    torch.save(checkpoint, filepath)
+    print(f"New best model saved with validation accuracy: {val_accuracy:.4f}")
+
+
+def load_checkpoint(filepath, model, optimizer=None):
+    """
+    Loads a checkpoint of the model, including model weights, optimizer state, and the epoch number.
+
+    Args:
+        filepath: Path to the checkpoint file.
+        model: The model to load the state into.
+        optimizer: The optimizer to load the state into (optional).
+
+    Returns:
+        model: The model with loaded weights.
+        optimizer: The optimizer with loaded state (if provided).
+        epoch: The epoch number from the checkpoint.
+        best_val_accuracy: The best validation accuracy from the checkpoint.
+    """
+    checkpoint = torch.load(filepath)
+    
+    # Load model state
+    model.load_state_dict(checkpoint['model_state_dict'])
+    
+    # Load optimizer state if optimizer is provided
+    if optimizer:
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    
+    epoch = checkpoint['epoch']
+    best_val_accuracy = checkpoint['val_accuracy']
+    
+    print(f"Checkpoint loaded: Epoch {epoch}, Best Validation Accuracy: {best_val_accuracy:.4f}")
+    
+    return model, optimizer, epoch, best_val_accuracy
+
+def evaluate_and_continue_training(model, train_loader, val_loader, criterion, optimizer, device, initial_epochs=200, scheduler=None, save_path='resnet_model.pth', clip_value=1.0):
     """
     Train the model and evaluate validation accuracy, continue training until >90% accuracy is achieved.
 
@@ -89,12 +141,14 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
         initial_epochs: Initial number of epochs to train the model.
         scheduler: Learning rate scheduler, if any.
         save_path: File path to save the trained model.
+        clip_value: The maximum allowed value for gradient clipping.
 
     Returns:
         None
     """
     target_accuracy = 0.90  # Set target accuracy to 90%
     achieved_accuracy = 0.0
+    best_val_accuracy = 0.0  # Track the best validation accuracy
     epochs = initial_epochs
     
     # Use mixed precision training to reduce memory usage
@@ -122,6 +176,11 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
                 # Backward pass and optimization
                 optimizer.zero_grad()
                 scaler.scale(loss).backward()  # Scale the loss for mixed precision
+                
+                # Gradient clipping
+                scaler.unscale_(optimizer)  # Unscale gradients before clipping
+                torch.nn.utils.clip_grad_norm_(model.parameters(), clip_value)  # Clip gradients
+                
                 scaler.step(optimizer)
                 scaler.update()
 
@@ -150,15 +209,17 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
         metrics = model.get_metrics_per_iteration()
         plot_metrics(metrics, save_path='training_metrics.png')
 
-        # Save the model
-        torch.save(model.state_dict(), save_path)
-        print(f"Model saved to {save_path}.")
-        
         # Evaluate model on the validation set
         eval_results = evaluate_model(model, val_loader, criterion, device)
         achieved_accuracy = eval_results['accuracy']
         print(f"Validation Accuracy: {achieved_accuracy * 100:.2f}%")
 
+        # Check if the current validation accuracy is the best so far
+        if achieved_accuracy > best_val_accuracy:
+            best_val_accuracy = achieved_accuracy
+            # Save the model checkpoint
+            save_checkpoint(model, optimizer, epoch, best_val_accuracy, save_path)
+        
         # Check if target accuracy is reached, else continue training with more epochs
         if achieved_accuracy < target_accuracy:
             print("Target accuracy not reached, increasing epochs and continuing training.")

@@ -18,12 +18,16 @@ train_loader, val_loader = get_CIFAR_10(batch_size=256, num_workers=8, augmentat
 model = resnet18(num_classes=10).to(device)
 
 # Define loss function and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
-
+# criterion = nn.CrossEntropyLoss()
+# optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)  # Use Adam optimizer with weight decay
 # Define One Cycle Learning Rate Scheduler
-max_lr = 0.1  # Set maximum learning rate
-scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=max_lr, steps_per_epoch=len(train_loader), epochs=200)
+# max_lr = 0.1  # Set maximum learning rate
+# scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=max_lr, steps_per_epoch=len(train_loader), epochs=50)
+
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(model.parameters(), lr=0.1,
+                      momentum=0.9, weight_decay=5e-4)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
 # Use mixed precision training to reduce memory usage
 scaler = GradScaler()
