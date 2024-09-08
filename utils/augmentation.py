@@ -40,9 +40,12 @@ def resnet_augmentations():
         torchvision.transforms.Compose: A composition of the specified augmentations.
     """
     return T.Compose([
-        T.RandomResizedCrop(224, scale=(256/480, 1.0)),  # Resizes shorter side randomly sampled in [256, 480]
-        T.RandomHorizontalFlip(),  # Randomly flip the image horizontally
+        T.RandomCrop(32, padding=4),                # Randomly crop the image with padding of 4 pixels
+        T.RandomHorizontalFlip(),                   # Randomly flip the image horizontally
+        T.RandomRotation(degree = 15),
+        T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.05),  # Mild color jitter
+        T.autoaugment.TrivialAugmentWide(),
         T.ToTensor(),
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Per-pixel mean subtraction
-        T.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1)  # Standard color augmentation
+        T.RandomErasing(p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0, inplace=False),
+        T.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])  # Standard CIFAR-10 normalization
     ])
