@@ -2,8 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from models.layers import StandardDWBlock, PreBlock, MidBlock, PostBlock, BinaryConv2d
+from .base_model import BaseModel
 
-class MoBiNet(nn.Module):
+class MoBiNet(BaseModel):
     """
     MoBiNet - A modular binary neural network that uses various types of blocks.
 

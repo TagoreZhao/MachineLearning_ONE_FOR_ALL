@@ -151,7 +151,7 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
     best_val_accuracy = 0.0  # Track the best validation accuracy
     total_epochs = 0  # Initialize total epochs counter
     increment = 20  # Number of epochs to increment if target accuracy is not reached
-    max_epochs = 1000  # Set a maximum number of epochs
+    max_epochs = 20  # Set a maximum number of epochs
     scaler = GradScaler()  # Use mixed precision training to reduce memory usage
 
     # Continue training until target accuracy is reached or max epochs

@@ -194,6 +194,8 @@ class BinaryConv2d(nn.Conv2d):
         input = input.sign()  # Binarize input
         return F.conv2d(input, binarized_weights, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
+
+
 class PreBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         super(PreBlock, self).__init__()
