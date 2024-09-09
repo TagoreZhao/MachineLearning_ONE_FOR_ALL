@@ -127,7 +127,7 @@ def load_checkpoint(filepath, model, optimizer=None):
     
     return model, optimizer, epoch, best_val_accuracy
 
-def evaluate_and_continue_training(model, train_loader, val_loader, criterion, optimizer, device, initial_epochs=200, scheduler=None, save_path='resnet_model.pth', clip_value=1.0):
+def evaluate_and_continue_training(model, train_loader, val_loader, criterion, optimizer, device, initial_epochs, scheduler=None, save_path='resnet_model.pth', clip_value=1.0):
     """
     Train the model and evaluate validation accuracy, continue training until >90% accuracy is achieved.
 
@@ -149,16 +149,17 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
     target_accuracy = 0.90  # Set target accuracy to 90%
     achieved_accuracy = 0.0
     best_val_accuracy = 0.0  # Track the best validation accuracy
-    epochs = initial_epochs
     total_epochs = 0  # Initialize total epochs counter
-    
-    # Use mixed precision training to reduce memory usage
-    scaler = GradScaler()
-    
-    while achieved_accuracy < target_accuracy:
-        print(f"Starting training for the next {epochs} epochs.")
-        
-        for epoch in range(epochs):
+    increment = 20  # Number of epochs to increment if target accuracy is not reached
+    max_epochs = 1000  # Set a maximum number of epochs
+    scaler = GradScaler()  # Use mixed precision training to reduce memory usage
+
+    # Continue training until target accuracy is reached or max epochs
+    while achieved_accuracy < target_accuracy and total_epochs < max_epochs:
+        print(f"Starting training for the next {initial_epochs} epochs.")
+
+        for epoch in range(initial_epochs):
+            total_epochs += 1
             epoch_train_loss = 0.0
             epoch_train_accuracy = 0.0
             train_batches = 0
@@ -200,33 +201,41 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
             epoch_train_loss /= train_batches
             epoch_train_accuracy /= train_batches
             
-            # Step the scheduler if provided
-            if scheduler is not None:
-                scheduler.step()
-            
-            print(f"Epoch {total_epochs + epoch + 1} - Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_accuracy:.4f}")
-        
-        # Update the total epochs count
-        total_epochs += epochs
-        
+            print(f"Epoch {total_epochs} - Train Loss: {epoch_train_loss:.4f}, Train Acc: {epoch_train_accuracy:.4f}")
+
         # Retrieve and save the training metrics plot
         metrics = model.get_metrics_per_iteration()
-        plot_metrics(metrics, save_path='training_metrics.png')
+        plot_filename = f'training_metrics_epoch_{total_epochs}.png'
+        plot_metrics(metrics, save_path=plot_filename)
+        print(f"Saved training metrics plot as {plot_filename}.")
 
-        # Evaluate model on the validation set
+        # Evaluate model on the validation set after each set of epochs
         eval_results = evaluate_model(model, val_loader, criterion, device)
         achieved_accuracy = eval_results['accuracy']
-        print(f"Validation Accuracy: {achieved_accuracy * 100:.2f}%")
+        val_loss = eval_results['loss']  # Capture validation loss for scheduler if needed
+        print(f"Validation Accuracy: {achieved_accuracy * 100:.2f}%, Validation Loss: {val_loss:.4f}")
 
-        # Check if the current validation accuracy is the best so far
+        # Save the model if this is the best accuracy so far
         if achieved_accuracy > best_val_accuracy:
             best_val_accuracy = achieved_accuracy
-            # Save the model checkpoint
-            save_checkpoint(model, optimizer, total_epochs, best_val_accuracy, save_path)
+            save_checkpoint(model, optimizer, epoch, best_val_accuracy, save_path)
+            print(f"New best model saved to {save_path} with accuracy {best_val_accuracy:.4f}.")
+
+        # Step the scheduler if provided
+        if scheduler is not None:
+            # Pass validation loss if using ReduceLROnPlateau
+            if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                scheduler.step(val_loss)
+            else:
+                scheduler.step()
         
-        # Check if target accuracy is reached, else continue training with more epochs
-        if achieved_accuracy < target_accuracy:
-            print("Target accuracy not reached, increasing epochs and continuing training.")
-            epochs += 50  # Increment epochs by 50 if target not reached
-        else:
-            print(f"Target accuracy reached after {total_epochs} total epochs!")
+        # Check if target accuracy is reached, stop if true
+        if achieved_accuracy >= target_accuracy:
+            print(f"Target accuracy reached at {total_epochs} total epochs!")
+            break
+        
+        # If not reached, increment the epochs and continue training
+        print("Target accuracy not reached, increasing epochs and continuing training.")
+        initial_epochs = increment
+
+    print(f"Training ended after {total_epochs} epochs with best validation accuracy of {best_val_accuracy:.4f}.")
