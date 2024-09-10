@@ -11,10 +11,10 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
 # Load CIFAR-10 dataset with data augmentation suitable for MobileNet
-train_loader, val_loader = get_CIFAR_10(batch_size=256, num_workers=8, augmentation='mobilenetv1')
+train_loader, val_loader = get_CIFAR_10(batch_size=256, num_workers=8, augmentation='resnet')
 
 # Initialize MobileNetV1 model with width and resolution multipliers
-model = mobilenet_v1(num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0).to(device)
+model = mobilenet_v1(num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0,dropout_rate=0.25).to(device)
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
@@ -36,8 +36,8 @@ evaluate_and_continue_training(
     device, 
     initial_epochs=80, 
     scheduler=scheduler, 
-    max_epochs=1000,
-    target_accuracy=0.8,
+    max_epochs=5000,
+    target_accuracy=0.9,
     save_path='mobilenet_v1_model.pth', 
     clip_value=1.0  # Gradient clipping value, adjust if necessary
 )

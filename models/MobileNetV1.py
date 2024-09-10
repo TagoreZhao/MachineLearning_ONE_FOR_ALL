@@ -17,11 +17,12 @@ class MobileNetV1(BaseModel):
     - width_multiplier: Scales the number of channels in each layer.
     - resolution_multiplier: Scales the input resolution of the model.
     """
-    def __init__(self, num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0):
+    def __init__(self, num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0, dropout_rate=0.5):
         super(MobileNetV1, self).__init__()
         self.width_multiplier = width_multiplier
         self.resolution_multiplier = resolution_multiplier
         self.num_classes = num_classes
+        self.dropout_rate = dropout_rate
 
         # Adjust the input channels according to the width multiplier
         def adjust_channels(channels):
@@ -47,6 +48,9 @@ class MobileNetV1(BaseModel):
             DepthwiseSeparableConv(adjust_channels(1024), adjust_channels(1024), stride=1)
         )
 
+        # Dropout layer to reduce overfitting
+        self.dropout = nn.Dropout(p=self.dropout_rate)
+
         # Fully connected layer for classification
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(adjust_channels(1024), num_classes)
@@ -65,12 +69,13 @@ class MobileNetV1(BaseModel):
         x = self.layers(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
+        x = self.dropout(x)  # Apply dropout before the fully connected layer
         x = self.fc(x)
         return x
 
 # Factory function to create MobileNetV1 model
-def mobilenet_v1(num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0):
+def mobilenet_v1(num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0, dropout_rate=0.5):
     """
     Constructs a MobileNetV1 model with specified multipliers.
     """
-    return MobileNetV1(num_classes=num_classes, width_multiplier=width_multiplier, resolution_multiplier=resolution_multiplier)
+    return MobileNetV1(num_classes=num_classes, width_multiplier=width_multiplier, resolution_multiplier=resolution_multiplier, dropout_rate=dropout_rate)
