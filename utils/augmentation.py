@@ -16,6 +16,8 @@ def get_augmentations(augmentation = 'basic'):
         return resnet_augmentations()
     elif augmentation == 'basic':
         return basic_augmentations()
+    elif augmentation == 'mobilenetv1':
+        return mobilenet_augmentations()
     else:
         raise ValueError(f'Invalid augmentation strategy: {augmentation}')
     
@@ -47,5 +49,22 @@ def resnet_augmentations():
         T.autoaugment.TrivialAugmentWide(),
         T.ToTensor(),
         T.RandomErasing(p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0, inplace=False),
+        T.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])  # Standard CIFAR-10 normalization
+    ])
+
+def mobilenet_augmentations():
+    """
+    Simplified augmentation strategy tailored for MobileNetV1:
+    - Focuses on lightweight and computationally efficient augmentations.
+    - Preserves essential transformations that improve generalization without heavy processing.
+
+    Returns:
+        torchvision.transforms.Compose: A composition of the specified augmentations.
+    """
+    return T.Compose([
+        T.RandomCrop(32, padding=4),                # Randomly crop the image with padding to simulate slight shifts
+        T.RandomHorizontalFlip(p=0.5),              # Randomly flip the image horizontally with a 50% chance
+        T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.05),  # Mild color adjustments
+        T.ToTensor(),                               # Convert the image to a tensor
         T.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])  # Standard CIFAR-10 normalization
     ])

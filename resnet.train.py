@@ -50,6 +50,8 @@ evaluate_and_continue_training(
     device, 
     initial_epochs=1, 
     scheduler=scheduler, 
+    max_epochs=1000,
+    target_accuracy=0.9,
     save_path='resnet50_model.pth', 
     clip_value=1.0  # Gradient clipping value, adjust if necessary
 )

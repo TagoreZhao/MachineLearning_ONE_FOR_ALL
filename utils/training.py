@@ -127,7 +127,7 @@ def load_checkpoint(filepath, model, optimizer=None):
     
     return model, optimizer, epoch, best_val_accuracy
 
-def evaluate_and_continue_training(model, train_loader, val_loader, criterion, optimizer, device, initial_epochs, scheduler=None, save_path='resnet_model.pth', clip_value=1.0):
+def evaluate_and_continue_training(model, train_loader, val_loader, criterion, optimizer, device, initial_epochs, max_epochs = 1000, target_accuracy = 0.90, scheduler=None, save_path='resnet_model.pth', clip_value=1.0):
     """
     Train the model and evaluate validation accuracy, continue training until >90% accuracy is achieved.
 
@@ -146,12 +146,10 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
     Returns:
         None
     """
-    target_accuracy = 0.90  # Set target accuracy to 90%
     achieved_accuracy = 0.0
     best_val_accuracy = 0.0  # Track the best validation accuracy
     total_epochs = 0  # Initialize total epochs counter
     increment = 20  # Number of epochs to increment if target accuracy is not reached
-    max_epochs = 20  # Set a maximum number of epochs
     scaler = GradScaler()  # Use mixed precision training to reduce memory usage
 
     # Continue training until target accuracy is reached or max epochs

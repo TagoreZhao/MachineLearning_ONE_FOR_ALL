@@ -409,3 +409,40 @@ class StandardDWBlock(nn.Module):
         # Add skip connection
         x += residual
         return x
+
+class DepthwiseSeparableConv(nn.Module):
+    """
+    Depthwise Separable Convolution Layer with width multiplier.
+
+    Description:
+    - A depthwise separable convolution is composed of a depthwise convolution followed by a pointwise convolution.
+    - It reduces the model size and computation compared to standard convolutions while maintaining performance.
+
+    Parameters:
+    - in_channels: Number of input channels.
+    - out_channels: Number of output channels.
+    - stride: Stride of the depthwise convolution.
+    """
+    def __init__(self, in_channels, out_channels, stride=1):
+        super(DepthwiseSeparableConv, self).__init__()
+        # Depthwise convolution: applies a single convolutional filter per input channel
+        self.depthwise = nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=stride, padding=1, groups=in_channels, bias=False)
+        self.bn1 = nn.BatchNorm2d(in_channels)
+        self.relu1 = nn.ReLU(inplace=True)
+
+        # Pointwise convolution: 1x1 convolution to combine the output channels
+        self.pointwise = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.relu2 = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        """
+        Forward pass of the depthwise separable convolution layer.
+        """
+        x = self.depthwise(x)
+        x = self.bn1(x)
+        x = self.relu1(x)
+        x = self.pointwise(x)
+        x = self.bn2(x)
+        x = self.relu2(x)
+        return x

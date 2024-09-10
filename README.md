@@ -13,6 +13,7 @@ CNN-CIFAR10/
 │   ├── custom_cnn.py          # Custom CNN model (already implemented, this is a small model that can be used to test)
 │   ├── resnet.py              # Implementation of ResNet architectures (ResNet18, ResNet34, etc.)
 │   ├── mobinet.py             # Implementation of Mobile Binary Net architecture
+|   ├── MobileNetV1            # Implementation of Mobile Net Architecture
 │   └── layers.py              # Custom layers or building blocks used in ResNet and MobileNet (e.g., residual blocks, depthwise separable convs)
 │
 ├── utils/
@@ -25,6 +26,7 @@ CNN-CIFAR10/
 │   └── helper.py              # Helper functions such as saving models, loading checkpoints, etc.
 │
 ├── config.py                  # Configuration file for hyperparameters (learning rate, batch size, etc.)
+├── presentation.ipynb         # Keep recording my result model.
 ├── requirements.txt           # List of required Python packages (e.g., PyTorch, torchvision)
 ├── README.md                  # Documentation for setting up and using the project
 ├── test.ipynb                 # Jupyter notebook for testing models, visualizing results, etc.
