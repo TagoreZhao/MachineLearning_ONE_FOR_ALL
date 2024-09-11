@@ -34,7 +34,7 @@ evaluate_and_continue_training(
     criterion, 
     optimizer, 
     device, 
-    initial_epochs=1, 
+    initial_epochs=500, 
     scheduler=scheduler, 
     save_path='mobilenet_v2_model.pth', 
     clip_value=1.0  # Gradient clipping value, adjust if necessary
