@@ -14,14 +14,14 @@ print(f"Using device: {device}")
 train_loader, val_loader = get_CIFAR_10(batch_size=256, num_workers=8, augmentation='resnet')
 
 # Initialize MobileNetV1 model with width and resolution multipliers
-model = mobilenet_v1(num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0,dropout_rate=0.25).to(device)
+model = mobilenet_v1(num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0,dropout_rate=0.5).to(device)
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
+optimizer = optim.SGD(model.parameters(), lr=0.005, momentum=0.9, weight_decay=1e-3)
 
 # Define learning rate scheduler
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
 
 # Use mixed precision training to reduce memory usage
 scaler = GradScaler()
@@ -34,7 +34,7 @@ evaluate_and_continue_training(
     criterion, 
     optimizer, 
     device, 
-    initial_epochs=80, 
+    initial_epochs=200, 
     scheduler=scheduler, 
     max_epochs=5000,
     target_accuracy=0.9,
