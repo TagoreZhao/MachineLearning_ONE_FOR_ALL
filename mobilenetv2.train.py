@@ -14,7 +14,7 @@ print(f"Using device: {device}")
 train_loader, val_loader = get_CIFAR_10(batch_size=256, num_workers=8, augmentation='resnet')
 
 # Initialize MobileNetV2 model with width and resolution multipliers
-model = mobilenet_v2(num_classes=10, width_multiplier=1.0, resolution_multiplier=1.0, dropout_rate=0.2).to(device)
+model = mobilenet_v2(num_classes=10, width_multiplier=0.75, resolution_multiplier=1.0, dropout_rate=0.2).to(device)
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
@@ -36,6 +36,7 @@ evaluate_and_continue_training(
     device, 
     initial_epochs=500, 
     scheduler=scheduler, 
+    max_epochs=5000,
     save_path='mobilenet_v2_model.pth', 
     clip_value=1.0  # Gradient clipping value, adjust if necessary
 )

@@ -38,7 +38,7 @@ class MobileNetV2(BaseModel):
         inverted_residual_config = [
             # t, c, n, s (expand ratio, output channels, num blocks, stride)
             (1, 16, 1, 1),
-            (6, 24, 2, 2),
+            (6, 24, 2, 1),
             (6, 32, 3, 2),
             (6, 64, 4, 2),
             (6, 96, 3, 1),
