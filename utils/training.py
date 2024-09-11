@@ -224,7 +224,7 @@ def evaluate_and_continue_training(model, train_loader, val_loader, criterion, o
             # Pass validation loss if using ReduceLROnPlateau
             if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
                 scheduler.step(val_loss)
-                scheduler.get_last_lr()
+                print(f"New Learning Rate: {optimizer.param_groups[0]['lr']}")
             else:
                 scheduler.step()
         

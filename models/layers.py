@@ -446,3 +446,43 @@ class DepthwiseSeparableConv(nn.Module):
         x = self.bn2(x)
         x = self.relu2(x)
         return x
+
+class InvertedResidualBlock(nn.Module):
+    """
+    Inverted Residual Block used in MobileNetV2.
+
+    Parameters:
+    - in_channels: Number of input channels.
+    - out_channels: Number of output channels.
+    - stride: Stride for depthwise convolution.
+    - expand_ratio: Factor to expand the input channels before depthwise convolution.
+    """
+    def __init__(self, in_channels, out_channels, stride, expand_ratio):
+        super(InvertedResidualBlock, self).__init__()
+        self.stride = stride
+        hidden_dim = in_channels * expand_ratio
+        self.use_res_connect = self.stride == 1 and in_channels == out_channels
+
+        layers = []
+        # Pointwise Convolution (Expansion)
+        if expand_ratio != 1:
+            layers.append(nn.Conv2d(in_channels, hidden_dim, kernel_size=1, stride=1, padding=0, bias=False))
+            layers.append(nn.BatchNorm2d(hidden_dim))
+            layers.append(nn.ReLU6(inplace=True))
+        
+        # Depthwise Convolution
+        layers.append(nn.Conv2d(hidden_dim, hidden_dim, kernel_size=3, stride=stride, padding=1, groups=hidden_dim, bias=False))
+        layers.append(nn.BatchNorm2d(hidden_dim))
+        layers.append(nn.ReLU6(inplace=True))
+        
+        # Linear Pointwise Convolution (Projection)
+        layers.append(nn.Conv2d(hidden_dim, out_channels, kernel_size=1, stride=1, padding=0, bias=False))
+        layers.append(nn.BatchNorm2d(out_channels))
+
+        self.block = nn.Sequential(*layers)
+
+    def forward(self, x):
+        if self.use_res_connect:
+            return x + self.block(x)
+        else:
+            return self.block(x)
