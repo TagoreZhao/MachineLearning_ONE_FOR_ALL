@@ -114,7 +114,6 @@ fsspec==2024.6.1
 future==1.0.0
 gast==0.6.0
 gcsfs==2024.6.1
-GDAL==3.6.4
 gdown==5.2.0
 geemap==0.34.5
 gensim==4.3.3
@@ -146,7 +145,6 @@ google-cloud-pubsub==2.23.1
 google-cloud-resource-manager==1.12.5
 google-cloud-storage==2.8.0
 google-cloud-translate==3.15.5
-google-colab @ file:///colabtools/dist/google_colab-1.0.0.tar.gz#sha256=2651669c5833160b2026411eef86380c515ef8a6573e8a47c2468d7f1cb72ec4
 google-crc32c==1.6.0
 google-generativeai==0.7.2
 google-pasta==0.2.0
@@ -335,7 +333,6 @@ prophet==1.1.5
 proto-plus==1.24.0
 protobuf==3.20.3
 psutil==5.9.5
-psycopg2==2.9.9
 ptyprocess==0.7.0
 py-cpuinfo==9.0.0
 py4j==0.10.9.7
@@ -356,7 +353,6 @@ PyDrive2==1.20.0
 pyerfa==2.0.1.4
 pygame==2.6.0
 Pygments==2.18.0
-PyGObject==3.42.1
 PyJWT==2.9.0
 pymc==5.16.2
 pymystem3==0.2.0
@@ -371,13 +367,6 @@ pyproject_hooks==1.2.0
 pyshp==2.3.1
 PySocks==1.7.1
 pytensor==2.25.4
-pytest==7.4.4
-python-apt==2.4.0
-python-box==7.2.0
-python-dateutil==2.8.2
-python-louvain==0.16
-python-slugify==8.0.4
-python-utils==3.9.0
 pytz==2024.2
 pyviz_comms==3.0.3
 PyYAML==6.0.2
@@ -392,7 +381,6 @@ requirements-parser==0.9.0
 rich==13.8.1
 rmm-cu12==24.6.0
 rpds-py==0.20.0
-rpy2==3.4.2
 rsa==4.9
 safetensors==0.4.5
 scikit-image==0.24.0
