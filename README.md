@@ -4,34 +4,68 @@
 ```
 CNN-CIFAR10/
 │
-├── data/
-│   ├── __init__.py            # Initialize the data module
+├── data/                          # Contains CIFAR-10 dataset and related files
+│   ├── cifar-10-batches-py/        # Extracted CIFAR-10 dataset batches
+│   ├── cifar-10-python.tar.gz      # Compressed CIFAR-10 dataset
+│   ├── __init__.py                 # Initialize the data module
+│   └── __pycache__/                # Compiled Python cache files
 │
-├── models/
-│   ├── __init__.py            # Initialize the models module
-│   ├── base_model.py          # BaseModel class (already implemented)
-│   ├── custom_cnn.py          # Custom CNN model (already implemented, this is a small model that can be used to test)
-│   ├── resnet.py              # Implementation of ResNet architectures (ResNet18, ResNet34, etc.)
-│   ├── mobinet.py             # Implementation of Mobile Binary Net architecture
-|   ├── MobileNetV1            # Implementation of Mobile Net Architecture
-│   └── layers.py              # Custom layers or building blocks used in ResNet and MobileNet (e.g., residual blocks, depthwise separable convs)
+├── MITcourse/                      # Jupyter notebooks from MIT course labs
+│   ├── Copy_of_Lab1.ipynb          
+│   ├── Copy_of_Lab2.ipynb          
+│   ├── Copy_of_Lab3.ipynb          
+│   ├── Copy_of_Lab4.ipynb          
+│   └── requirements.txt            # Python packages required for MIT course labs
 │
-├── utils/
-│   ├── __init__.py            # Initialize the utils module
-│   ├── training.py            # Training functions (move your current training function here)
-│   ├── evaluation.py          # Evaluation functions to test accuracy on validation/test sets
-│   ├── visualization.py       # Functions for visualizing training results, like loss and accuracy plots
-│   ├── dataset.py             # Code to load and preprocess the CIFAR-10 dataset
-│   ├── augmentation.py        # Optional: Data augmentation techniques (flip, crop, etc.)
-│   └── helper.py              # Helper functions such as saving models, loading checkpoints, etc.
+├── models/                         # Model architectures and custom layers
+│   ├── base_model.py               # Base model class for all networks
+│   ├── CustomCNN.py                # Custom CNN model implementation
+│   ├── __init__.py                 # Initialize the models module
+│   ├── layers.py                   # Custom layers and building blocks for models
+│   ├── MobileNetV1.py              # MobileNetV1 architecture implementation
+│   ├── MobileNetV2.py              # MobileNetV2 architecture implementation
+│   ├── mobinet.py                  # MobileNet-based architecture with modifications
+│   ├── __pycache__/                # Compiled Python cache files for the models
+│   ├── resnet.py                   # ResNet architecture implementation (ResNet18, ResNet34, etc.)
+│   └── RNN_np.py                   # Implementation of RNN using numpy
 │
-├── config.py                  # Configuration file for hyperparameters (learning rate, batch size, etc.)
-├── presentation.ipynb         # Keep recording my result model.
-├── requirements.txt           # List of required Python packages (e.g., PyTorch, torchvision)
-├── README.md                  # Documentation for setting up and using the project
-├── test.ipynb                 # Jupyter notebook for testing models, visualizing results, etc.
-├── resnet.train.py            # script to train resnet to 90% accuracy
-└── .gitignore                 # Specify which files and directories to ignore in version control
+├── picture/                        # Visualizations of model performance
+│   ├── Enhanced_Mobile_Neural_Network_Outline.png    # Architecture diagram for MobileNet
+│   ├── MobileNetV1_epoch_120.png                    # Training metrics for MobileNetV1 (120 epochs)
+│   ├── MobileNetV1(ndp)_epoch_380.png               # Metrics for modified MobileNetV1 (380 epochs)
+│   ├── mobile_v2_epoch_1000.png                     # MobileNetV2 performance after 1000 epochs
+│   ├── resnet50_epoch_801.png                       # ResNet50 training metrics after 801 epochs
+│   └── training_metrics_epoch_2040.png              # General training metrics after 2040 epochs
+│
+├── train/                          # Training scripts for different models
+│   ├── mobilenetv1.train.py        # Training script for MobileNetV1
+│   ├── mobilenetv2.train.py        # Training script for MobileNetV2
+│   ├── mobinet.train.py            # Training script for MobileNet (modified)
+│   └── resnet.train.py             # Training script for ResNet (target: 90% accuracy)
+│
+├── utils/                          # Utility functions for training, evaluation, and dataset handling
+│   ├── augmentation.py             # Data augmentation techniques
+│   ├── DataReader.py               # Helper function to read and process data
+│   ├── dataset.py                  # Code to load and preprocess the CIFAR-10 dataset
+│   ├── evaluation.py               # Functions to evaluate model performance
+│   ├── helper.py                   # Helper functions (saving/loading models, checkpoints)
+│   ├── __init__.py                 # Initialize the utils module
+│   ├── training.py                 # Functions for training models
+│   └── visualization.py            # Functions to visualize training results (loss, accuracy, etc.)
+│
+├── __pycache__/                    # Compiled Python cache files for various scripts
+│   └── config.cpython-310.pyc
+│
+├── .gitignore                      # Specifies files/directories to ignore in version control
+├── config.py                       # Configuration file for hyperparameters (learning rate, batch size, etc.)
+├── environment.yml                 # Conda environment configuration for dependency management
+├── input.txt                       # Input data for training/testing
+├── mini_cnn_model.pth              # Saved model weights for a small custom CNN model
+├── presentation.ipynb              # Notebook for recording model results and experiments
+├── README.md                       # Project documentation and description
+├── requirements.txt                # List of required Python packages (e.g., PyTorch, torchvision)
+└── test.ipynb                      # Notebook for testing models and visualizing results
+
 ```
 # T5 Model Implementation Workflow
 
