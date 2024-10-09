@@ -1,4 +1,4 @@
-# One for All For CIFAR10
+# One for All For Machine Learning
 
 ## Directory Structure
 ```
